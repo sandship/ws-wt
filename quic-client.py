@@ -9,7 +9,7 @@ from typing import Optional, cast
 from aioquic.asyncio.client import connect
 from aioquic.asyncio.protocol import QuicConnectionProtocol
 from aioquic.quic.configuration import QuicConfiguration
-from aioquic.quic.events import DatagramFrameReceived, QuicEvent
+from aioquic.quic.events import QuicEvent
 from aioquic.quic.logger import QuicFileLogger
 
 logger = logging.getLogger("client")
@@ -48,22 +48,24 @@ async def run(configuration: QuicConfiguration, host: str, port: int) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="SiDUCK client")
+    parser = argparse.ArgumentParser(description="QUIC Echo client")
+    
     parser.add_argument(
-        "host", type=str, help="The remote peer's host name or IP address"
+        "host", type=str, help="server host"
     )
-    parser.add_argument("port", type=int, help="The remote peer's port number")
+    parser.add_argument("port", type=int, help="server port")
+
     parser.add_argument(
         "-k",
         "--insecure",
         action="store_true",
-        help="do not validate server certificate",
+        help="if true, do not validate server",
     )
     parser.add_argument(
         "-q",
         "--quic-log",
         type=str,
-        help="log QUIC events to QLOG files in the specified directory",
+        help="specify directory for QLOG files",
     )
     parser.add_argument(
         "-l",
@@ -85,8 +87,7 @@ if __name__ == "__main__":
     configuration = QuicConfiguration(
         alpn_protocols=["h3-32"], is_client=True, max_datagram_frame_size=65536
     )
-    if args.insecure:
-        configuration.verify_mode = ssl.CERT_NONE
+    configuration.verify_mode = ssl.CERT_NONE
     if args.quic_log:
         configuration.quic_logger = QuicFileLogger(args.quic_log)
     if args.secrets_log:

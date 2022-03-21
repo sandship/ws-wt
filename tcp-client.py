@@ -1,16 +1,19 @@
+from ast import arg
 import websocket
+import argparse
 import _thread as thread
 import json
 from time import sleep
 
 class Websocket_Client():
     def __init__(self, host_addr):
-        self.ws = websocket.WebSocketApp(host_addr,
+        self.ws = websocket.WebSocketApp(
+            host_addr,
             on_message=self.on_message,
             on_error=self.on_error,
-            on_close=self.on_close
+            on_close=self.on_close,
+            on_open=self.on_open
         )
-        self.ws.on_open=self.on_open
 
     def on_message(self, ws, message):
         print("receive : {}".format(message))
@@ -37,6 +40,15 @@ class Websocket_Client():
         self.ws.run_forever()
 
 
-HOST_ADDR = "ws://127.0.0.1:18080/"
-ws_client = Websocket_Client(HOST_ADDR)
-ws_client.run_forever()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="TCP Echo client")
+
+    parser.add_argument(
+        "host", type=str, help="server host"
+    )
+    parser.add_argument("port", type=int, help="server port")
+    
+    args = parser.parse_args()
+
+    ws_client = Websocket_Client(f"ws://{args.host}:{args.port}")
+    ws_client.run_forever()
